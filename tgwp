@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ABCASHI Product</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .product-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+        }
+
+        .product-header {
+            margin-bottom: 24px;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #3390ec);
+        }
+
+        .product-description {
+            margin-bottom: 24px;
+            line-height: 1.5;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .option-group {
+            margin-bottom: 24px;
+        }
+
+        .option-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .size-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .size-btn {
+            padding: 12px 20px;
+            border: 2px solid var(--tg-theme-button-color, #3390ec);
+            background-color: transparent;
+            color: var(--tg-theme-button-color, #3390ec);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 60px;
+        }
+
+        .size-btn.active {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .qty-btn {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--tg-theme-button-color, #3390ec);
+            background-color: transparent;
+            color: var(--tg-theme-button-color, #3390ec);
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .qty-display {
+            font-size: 24px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .total-section {
+            margin-top: 32px;
+            padding: 20px;
+            background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
+            border-radius: 12px;
+        }
+
+        .total-label {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #999999);
+            margin-bottom: 4px;
+        }
+
+        .total-price {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .error-message {
+            color: #ff3b30;
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: rgba(255, 59, 48, 0.1);
+            margin-bottom: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error" class="error-message" style="display: none;"></div>
+    <div id="app" class="product-container" style="display: none;">
+        <img id="productImage" class="product-image" alt="Product" />
+        
+        <div class="product-header">
+            <h1 id="productName" class="product-name"></h1>
+            <div id="productPrice" class="product-price"></div>
+        </div>
+
+        <div id="productDescription" class="product-description"></div>
+
+        <div class="option-group" id="sizeSection">
+            <div class="option-label">Select Size</div>
+            <div id="sizeButtons" class="size-buttons"></div>
+        </div>
+
+        <div class="option-group">
+            <div class="option-label">Quantity</div>
+            <div class="quantity-control">
+                <button id="decreaseBtn" class="qty-btn">−</button>
+                <div id="quantity" class="qty-display">1</div>
+                <button id="increaseBtn" class="qty-btn">+</button>
+            </div>
+        </div>
+
+        <div class="total-section">
+            <div class="total-label">Total</div>
+            <div id="totalPrice" class="total-price">$0.00</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        // App state
+        let productData = null;
+        let selectedSize = 'OneSize';
+        let quantity = 1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductData();
+        });
+
+        function loadProductData() {
+            try {
+                // Get product data from start parameter
+                const startParam = tg.initDataUnsafe?.start_param || '';
+                
+                if (!startParam) {
+                    showError('No product data provided');
+                    return;
+                }
+
+                // Decode product data (base64 encoded JSON)
+                const decodedData = atob(startParam);
+                productData = JSON.parse(decodedData);
+
+                // Validate product data
+                if (!productData.product_id || !productData.name || !productData.price) {
+                    showError('Invalid product data');
+                    return;
+                }
+
+                renderProduct();
+                setupMainButton();
+                
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showError('Failed to load product data');
+            }
+        }
+
+        function renderProduct() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+
+            // Set product details
+            document.getElementById('productName').textContent = productData.name;
+            document.getElementById('productPrice').textContent = `$${productData.price.toFixed(2)}`;
+            
+            if (productData.description) {
+                document.getElementById('productDescription').textContent = productData.description;
+            } else {
+                document.getElementById('productDescription').style.display = 'none';
+            }
+
+            // Set product image
+            const imageEl = document.getElementById('productImage');
+            if (productData.image_url) {
+                imageEl.src = productData.image_url;
+                imageEl.onerror = () => {
+                    imageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                };
+            } else {
+                imageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EABCASHI%3C/text%3E%3C/svg%3E';
+            }
+
+            // Setup sizes
+            const sizes = productData.sizes || ['OneSize'];
+            if (sizes.length === 1 && sizes[0] === 'OneSize') {
+                document.getElementById('sizeSection').style.display = 'none';
+            } else {
+                renderSizeButtons(sizes);
+            }
+
+            // Setup quantity controls
+            setupQuantityControls();
+
+            // Initial total update
+            updateTotal();
+        }
+
+        function renderSizeButtons(sizes) {
+            const container = document.getElementById('sizeButtons');
+            container.innerHTML = '';
+
+            sizes.forEach(size => {
+                const btn = document.createElement('button');
+                btn.className = 'size-btn';
+                btn.textContent = size;
+                btn.onclick = () => selectSize(size);
+                
+                if (size === selectedSize) {
+                    btn.classList.add('active');
+                }
+                
+                container.appendChild(btn);
+            });
+
+            selectedSize = sizes[0];
+        }
+
+        function selectSize(size) {
+            selectedSize = size;
+            
+            // Update button states
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                if (btn.textContent === size) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function setupQuantityControls() {
+            const decreaseBtn = document.getElementById('decreaseBtn');
+            const increaseBtn = document.getElementById('increaseBtn');
+
+            decreaseBtn.onclick = () => {
+                if (quantity > 1) {
+                    quantity--;
+                    updateQuantityDisplay();
+                }
+            };
+
+            increaseBtn.onclick = () => {
+                if (quantity < 99) {
+                    quantity++;
+                    updateQuantityDisplay();
+                }
+            };
+
+            updateQuantityDisplay();
+        }
+
+        function updateQuantityDisplay() {
+            document.getElementById('quantity').textContent = quantity;
+            document.getElementById('decreaseBtn').disabled = quantity <= 1;
+            document.getElementById('increaseBtn').disabled = quantity >= 99;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const total = productData.price * quantity;
+            document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function setupMainButton() {
+            tg.MainButton.text = 'Add to Cart';
+            tg.MainButton.color = tg.themeParams.button_color || '#3390ec';
+            tg.MainButton.textColor = tg.themeParams.button_text_color || '#ffffff';
+            
+            tg.MainButton.onClick(() => {
+                sendDataToBot();
+            });
+            
+            tg.MainButton.show();
+        }
+
+        function sendDataToBot() {
+            const data = {
+                action: 'add_to_cart',
+                product_id: productData.product_id,
+                name: productData.name,
+                price: productData.price,
+                size: selectedSize,
+                quantity: quantity
+            };
+
+            // Send data back to bot
+            tg.sendData(JSON.stringify(data));
+            
+            // Close the web app
+            tg.close();
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app').style.display = 'none';
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        // Handle back button
+        tg.BackButton.onClick(() => {
+            tg.close();
+        });
+        tg.BackButton.show();
+    </script>
+</body>
+</html>
