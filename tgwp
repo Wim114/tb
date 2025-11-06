@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ABCASHI Product</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Product Selection</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -13,98 +13,107 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            padding: 16px;
-            padding-bottom: 80px;
+            padding: 0;
+            overflow-x: hidden;
         }
 
-        .product-container {
-            max-width: 500px;
+        .container {
+            max-width: 100%;
             margin: 0 auto;
+            padding-bottom: 80px;
         }
 
         .product-image {
             width: 100%;
             height: 300px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            display: block;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
         }
 
-        .product-header {
-            margin-bottom: 24px;
+        .product-info {
+            padding: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
         }
 
         .product-name {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
         }
 
         .product-price {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--tg-theme-button-color, #3390ec);
+            margin-bottom: 20px;
         }
 
-        .product-description {
-            margin-bottom: 24px;
-            line-height: 1.5;
-            color: var(--tg-theme-hint-color, #999999);
+        .section {
+            padding: 15px 20px;
+            border-top: 1px solid var(--tg-theme-section-separator-color, #e5e5e5);
         }
 
-        .option-group {
-            margin-bottom: 24px;
-        }
-
-        .option-label {
+        .section-title {
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
+            color: var(--tg-theme-hint-color, #999999);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--tg-theme-hint-color, #999999);
         }
 
-        .size-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+        .size-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
-        .size-btn {
-            padding: 12px 20px;
+        .size-button {
+            padding: 12px;
             border: 2px solid var(--tg-theme-button-color, #3390ec);
-            background-color: transparent;
-            color: var(--tg-theme-button-color, #3390ec);
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 60px;
+            text-align: center;
         }
 
-        .size-btn.active {
-            background-color: var(--tg-theme-button-color, #3390ec);
+        .size-button:active {
+            transform: scale(0.95);
+        }
+
+        .size-button.selected {
+            background: var(--tg-theme-button-color, #3390ec);
             color: var(--tg-theme-button-text-color, #ffffff);
         }
 
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        .one-size-button {
+            grid-column: 1 / -1;
         }
 
-        .qty-btn {
-            width: 44px;
-            height: 44px;
-            border: 2px solid var(--tg-theme-button-color, #3390ec);
-            background-color: transparent;
-            color: var(--tg-theme-button-color, #3390ec);
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .qty-button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
             border-radius: 50%;
             font-size: 24px;
             font-weight: 600;
@@ -115,283 +124,429 @@
             transition: all 0.2s;
         }
 
-        .qty-btn:active {
-            transform: scale(0.95);
+        .qty-button:active {
+            transform: scale(0.9);
         }
 
-        .qty-btn:disabled {
+        .qty-button:disabled {
             opacity: 0.3;
             cursor: not-allowed;
         }
 
         .qty-display {
-            font-size: 24px;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .total-section {
-            margin-top: 32px;
-            padding: 20px;
-            background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
-            border-radius: 12px;
-        }
-
-        .total-label {
-            font-size: 14px;
-            color: var(--tg-theme-hint-color, #999999);
-            margin-bottom: 4px;
-        }
-
-        .total-price {
             font-size: 32px;
             font-weight: 700;
+            min-width: 60px;
+            text-align: center;
             color: var(--tg-theme-text-color, #000000);
         }
 
-        .error-message {
-            color: #ff3b30;
-            text-align: center;
-            padding: 16px;
-            border-radius: 8px;
-            background-color: rgba(255, 59, 48, 0.1);
-            margin-bottom: 16px;
+        .quick-qty {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 15px;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
+        .quick-qty-btn {
+            padding: 8px;
+            border: 1px solid var(--tg-theme-button-color, #3390ec);
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-qty-btn:active {
+            transform: scale(0.95);
+        }
+
+        .summary {
+            padding: 20px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-top: 1px solid var(--tg-theme-section-separator-color, #e5e5e5);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .summary-label {
             color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .total-row {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--tg-theme-section-separator-color, #e5e5e5);
+        }
+
+        .total-label {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .total-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #3390ec);
+        }
+
+        .error-message {
+            padding: 15px 20px;
+            background: #ff3b30;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .debug-info {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            font-size: 12px;
+            font-family: monospace;
+            color: #666;
+            border-bottom: 1px solid #ddd;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            animation: fadeIn 0.3s ease-out;
         }
     </style>
 </head>
 <body>
-    <div id="loading" class="loading">Loading...</div>
-    <div id="error" class="error-message" style="display: none;"></div>
-    <div id="app" class="product-container" style="display: none;">
-        <img id="productImage" class="product-image" alt="Product" />
-        
-        <div class="product-header">
-            <h1 id="productName" class="product-name"></h1>
-            <div id="productPrice" class="product-price"></div>
+    <div class="error-message" id="error"></div>
+    <div class="debug-info" id="debug" style="display:none;"></div>
+
+    <div class="container">
+        <!-- Product Image -->
+        <img id="productImage" class="product-image" alt="Product">
+
+        <!-- Product Info -->
+        <div class="product-info">
+            <div class="product-name" id="productName">Loading...</div>
+            <div class="product-price" id="productPrice">$0.00</div>
         </div>
 
-        <div id="productDescription" class="product-description"></div>
-
-        <div class="option-group" id="sizeSection">
-            <div class="option-label">Select Size</div>
-            <div id="sizeButtons" class="size-buttons"></div>
-        </div>
-
-        <div class="option-group">
-            <div class="option-label">Quantity</div>
-            <div class="quantity-control">
-                <button id="decreaseBtn" class="qty-btn">−</button>
-                <div id="quantity" class="qty-display">1</div>
-                <button id="increaseBtn" class="qty-btn">+</button>
+        <!-- Size Selection -->
+        <div class="section">
+            <div class="section-title">👕 Select Size</div>
+            <div class="size-grid">
+                <button class="size-button" data-size="XS">XS</button>
+                <button class="size-button" data-size="S">S</button>
+                <button class="size-button" data-size="M">M</button>
+                <button class="size-button" data-size="L">L</button>
+                <button class="size-button" data-size="XL">XL</button>
+                <button class="size-button" data-size="XXL">XXL</button>
+                <button class="size-button one-size-button" data-size="OneSize">One Size</button>
             </div>
         </div>
 
-        <div class="total-section">
-            <div class="total-label">Total</div>
-            <div id="totalPrice" class="total-price">$0.00</div>
+        <!-- Quantity Selection -->
+        <div class="section">
+            <div class="section-title">📦 Select Quantity</div>
+            <div class="quantity-selector">
+                <button class="qty-button" id="qtyMinus">−</button>
+                <div class="qty-display" id="qtyDisplay">1</div>
+                <button class="qty-button" id="qtyPlus">+</button>
+            </div>
+            <div class="quick-qty">
+                <button class="quick-qty-btn" data-qty="1">1</button>
+                <button class="quick-qty-btn" data-qty="2">2</button>
+                <button class="quick-qty-btn" data-qty="3">3</button>
+                <button class="quick-qty-btn" data-qty="5">5</button>
+                <button class="quick-qty-btn" data-qty="10">10</button>
+                <button class="quick-qty-btn" data-qty="20">20</button>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary">
+            <div class="summary-row">
+                <span class="summary-label">Size:</span>
+                <span class="summary-value" id="summarySize">Not selected</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Quantity:</span>
+                <span class="summary-value" id="summaryQty">1</span>
+            </div>
+            <div class="summary-row total-row">
+                <span class="total-label">Total:</span>
+                <span class="total-value" id="summaryTotal">$0.00</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // Initialize Telegram WebApp
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
+        // Debug mode - set to false in production
+        const DEBUG = true;
 
-        // App state
-        let productData = null;
-        let selectedSize = 'OneSize';
+        function debugLog(msg) {
+            if (DEBUG) {
+                const debugEl = document.getElementById('debug');
+                debugEl.style.display = 'block';
+                debugEl.innerHTML += msg + '<br>';
+                console.log(msg);
+            }
+        }
+
+        // Initialize Telegram Web App
+        let tg;
+        try {
+            tg = window.Telegram.WebApp;
+            debugLog('✅ Telegram WebApp initialized');
+            debugLog('Platform: ' + tg.platform);
+            debugLog('Version: ' + tg.version);
+        } catch (e) {
+            debugLog('❌ Telegram WebApp init failed: ' + e.message);
+            alert('Error: Not running in Telegram');
+        }
+
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            tg.MainButton.setText('ADD TO CART');
+            tg.MainButton.show();
+            debugLog('✅ Main button shown');
+        }
+
+        // Get product data from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        const productName = urlParams.get('name');
+        const productPriceStr = urlParams.get('price');
+        const productPrice = parseFloat(productPriceStr);
+        const productImage = urlParams.get('image');
+
+        debugLog('URL Params:');
+        debugLog('- id: ' + productId);
+        debugLog('- name: ' + productName);
+        debugLog('- price: ' + productPriceStr);
+        debugLog('- image: ' + (productImage ? 'provided' : 'none'));
+
+        // Validate required parameters
+        if (!productId || !productName || !productPrice || isNaN(productPrice)) {
+            debugLog('❌ Missing or invalid parameters!');
+            showError('Invalid product data. Missing: ' + 
+                (!productId ? 'id ' : '') +
+                (!productName ? 'name ' : '') +
+                (!productPrice || isNaN(productPrice) ? 'price' : '')
+            );
+        } else {
+            debugLog('✅ All parameters valid');
+        }
+
+        // State
+        let selectedSize = null;
         let quantity = 1;
+        const MAX_QUANTITY = 999;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProductData();
+        // Initialize product display
+        try {
+            document.getElementById('productName').textContent = decodeURIComponent(productName || 'Product');
+            document.getElementById('productPrice').textContent = `$${(productPrice || 0).toFixed(2)}`;
+            
+            if (productImage) {
+                document.getElementById('productImage').src = productImage;
+                debugLog('✅ Image set: ' + productImage.substring(0, 50) + '...');
+            } else {
+                document.getElementById('productImage').src = 'https://via.placeholder.com/600x300?text=Product+Image';
+                debugLog('ℹ️ Using placeholder image');
+            }
+            
+            document.getElementById('productImage').onerror = function() {
+                this.src = 'https://via.placeholder.com/600x300?text=Product+Image';
+                debugLog('⚠️ Image load failed, using placeholder');
+            };
+        } catch (e) {
+            debugLog('❌ Error setting product info: ' + e.message);
+        }
+
+        // Size selection
+        document.querySelectorAll('.size-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.size-button').forEach(b => b.classList.remove('selected'));
+
+                // Add selection
+                this.classList.add('selected');
+                selectedSize = this.dataset.size;
+
+                // Update summary
+                document.getElementById('summarySize').textContent = selectedSize;
+                updateTotal();
+                updateMainButton();
+
+                debugLog('Size selected: ' + selectedSize);
+
+                // Haptic feedback
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            });
         });
 
-        function loadProductData() {
-            try {
-                // Get product data from start parameter
-                const startParam = tg.initDataUnsafe?.start_param || '';
-                
-                if (!startParam) {
-                    showError('No product data provided');
-                    return;
+        // Quantity controls
+        document.getElementById('qtyMinus').addEventListener('click', function() {
+            if (quantity > 1) {
+                quantity--;
+                updateQuantityDisplay();
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
                 }
+            }
+        });
 
-                // Decode product data (base64 encoded JSON)
-                const decodedData = atob(startParam);
-                productData = JSON.parse(decodedData);
-
-                // Validate product data
-                if (!productData.product_id || !productData.name || !productData.price) {
-                    showError('Invalid product data');
-                    return;
+        document.getElementById('qtyPlus').addEventListener('click', function() {
+            if (quantity < MAX_QUANTITY) {
+                quantity++;
+                updateQuantityDisplay();
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
                 }
-
-                renderProduct();
-                setupMainButton();
-                
-            } catch (error) {
-                console.error('Error loading product:', error);
-                showError('Failed to load product data');
             }
-        }
+        });
 
-        function renderProduct() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-
-            // Set product details
-            document.getElementById('productName').textContent = productData.name;
-            document.getElementById('productPrice').textContent = `$${productData.price.toFixed(2)}`;
-            
-            if (productData.description) {
-                document.getElementById('productDescription').textContent = productData.description;
-            } else {
-                document.getElementById('productDescription').style.display = 'none';
-            }
-
-            // Set product image
-            const imageEl = document.getElementById('productImage');
-            if (productData.image_url) {
-                imageEl.src = productData.image_url;
-                imageEl.onerror = () => {
-                    imageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
-                };
-            } else {
-                imageEl.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23f0f0f0" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EABCASHI%3C/text%3E%3C/svg%3E';
-            }
-
-            // Setup sizes
-            const sizes = productData.sizes || ['OneSize'];
-            if (sizes.length === 1 && sizes[0] === 'OneSize') {
-                document.getElementById('sizeSection').style.display = 'none';
-            } else {
-                renderSizeButtons(sizes);
-            }
-
-            // Setup quantity controls
-            setupQuantityControls();
-
-            // Initial total update
-            updateTotal();
-        }
-
-        function renderSizeButtons(sizes) {
-            const container = document.getElementById('sizeButtons');
-            container.innerHTML = '';
-
-            sizes.forEach(size => {
-                const btn = document.createElement('button');
-                btn.className = 'size-btn';
-                btn.textContent = size;
-                btn.onclick = () => selectSize(size);
-                
-                if (size === selectedSize) {
-                    btn.classList.add('active');
-                }
-                
-                container.appendChild(btn);
-            });
-
-            selectedSize = sizes[0];
-        }
-
-        function selectSize(size) {
-            selectedSize = size;
-            
-            // Update button states
-            document.querySelectorAll('.size-btn').forEach(btn => {
-                if (btn.textContent === size) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+        // Quick quantity buttons
+        document.querySelectorAll('.quick-qty-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                quantity = parseInt(this.dataset.qty);
+                updateQuantityDisplay();
+                if (tg && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
                 }
             });
-        }
-
-        function setupQuantityControls() {
-            const decreaseBtn = document.getElementById('decreaseBtn');
-            const increaseBtn = document.getElementById('increaseBtn');
-
-            decreaseBtn.onclick = () => {
-                if (quantity > 1) {
-                    quantity--;
-                    updateQuantityDisplay();
-                }
-            };
-
-            increaseBtn.onclick = () => {
-                if (quantity < 99) {
-                    quantity++;
-                    updateQuantityDisplay();
-                }
-            };
-
-            updateQuantityDisplay();
-        }
+        });
 
         function updateQuantityDisplay() {
-            document.getElementById('quantity').textContent = quantity;
-            document.getElementById('decreaseBtn').disabled = quantity <= 1;
-            document.getElementById('increaseBtn').disabled = quantity >= 99;
+            document.getElementById('qtyDisplay').textContent = quantity;
+            document.getElementById('summaryQty').textContent = quantity;
+            document.getElementById('qtyMinus').disabled = quantity <= 1;
+            document.getElementById('qtyPlus').disabled = quantity >= MAX_QUANTITY;
             updateTotal();
         }
 
         function updateTotal() {
-            const total = productData.price * quantity;
-            document.getElementById('totalPrice').textContent = `$${total.toFixed(2)}`;
+            const total = (productPrice || 0) * quantity;
+            document.getElementById('summaryTotal').textContent = `$${total.toFixed(2)}`;
         }
 
-        function setupMainButton() {
-            tg.MainButton.text = 'Add to Cart';
-            tg.MainButton.color = tg.themeParams.button_color || '#3390ec';
-            tg.MainButton.textColor = tg.themeParams.button_text_color || '#ffffff';
+        function updateMainButton() {
+            if (!tg) return;
             
-            tg.MainButton.onClick(() => {
-                sendDataToBot();
-            });
-            
-            tg.MainButton.show();
-        }
-
-        function sendDataToBot() {
-            const data = {
-                action: 'add_to_cart',
-                product_id: productData.product_id,
-                name: productData.name,
-                price: productData.price,
-                size: selectedSize,
-                quantity: quantity
-            };
-
-            // Send data back to bot
-            tg.sendData(JSON.stringify(data));
-            
-            // Close the web app
-            tg.close();
+            if (selectedSize) {
+                tg.MainButton.enable();
+                tg.MainButton.color = tg.themeParams.button_color || '#3390ec';
+                debugLog('Main button enabled');
+            } else {
+                tg.MainButton.disable();
+                tg.MainButton.color = '#cccccc';
+                debugLog('Main button disabled (no size selected)');
+            }
         }
 
         function showError(message) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('app').style.display = 'none';
             const errorEl = document.getElementById('error');
             errorEl.textContent = message;
-            errorEl.style.display = 'block';
+            errorEl.classList.add('show');
+            setTimeout(() => {
+                errorEl.classList.remove('show');
+            }, 3000);
+            debugLog('❌ Error shown: ' + message);
         }
 
-        // Handle back button
-        tg.BackButton.onClick(() => {
-            tg.close();
-        });
-        tg.BackButton.show();
+        // Handle main button click
+        if (tg) {
+            tg.MainButton.onClick(function() {
+                debugLog('Main button clicked');
+                
+                if (!selectedSize) {
+                    showError('Please select a size');
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('error');
+                    }
+                    return;
+                }
+
+                // Prepare data to send
+                const data = {
+                    product_id: productId,
+                    product_name: productName,
+                    price: productPrice,
+                    size: selectedSize,
+                    quantity: quantity,
+                    total: productPrice * quantity
+                };
+
+                debugLog('Sending data: ' + JSON.stringify(data));
+
+                try {
+                    // Send data to bot
+                    tg.sendData(JSON.stringify(data));
+
+                    // Success feedback
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                    
+                    debugLog('✅ Data sent successfully');
+                } catch (e) {
+                    debugLog('❌ Error sending data: ' + e.message);
+                    showError('Failed to send data: ' + e.message);
+                }
+            });
+        }
+
+        // Initialize
+        updateQuantityDisplay();
+        updateTotal();
+        updateMainButton();
+
+        // Apply theme colors
+        if (tg && tg.themeParams) {
+            if (tg.themeParams.bg_color) {
+                document.body.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+            }
+            if (tg.themeParams.text_color) {
+                document.body.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+            }
+            if (tg.themeParams.button_color) {
+                document.body.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color);
+            }
+            if (tg.themeParams.button_text_color) {
+                document.body.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color);
+            }
+            debugLog('✅ Theme colors applied');
+        }
+
+        debugLog('=== Initialization complete ===');
     </script>
 </body>
 </html>
