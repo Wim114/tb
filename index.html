@@ -183,18 +183,6 @@
         .error.show {
             transform: translateY(0);
         }
-
-        /* Loading State */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: var(--tg-theme-hint-color, #999999);
-        }
-
-        .loading.show {
-            display: block;
-        }
     </style>
 </head>
 <body>
@@ -203,7 +191,7 @@
 
     <!-- Product Header -->
     <div class="product-header">
-        <div id="productName" class="product-name">Product Name</div>
+        <div id="productName" class="product-name">Loading...</div>
         <div id="productPrice" class="product-price">$0.00</div>
     </div>
 
@@ -247,11 +235,6 @@
         </div>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading" class="loading">
-        Processing...
-    </div>
-
     <script>
         // Initialize Telegram Web App
         const tg = window.Telegram.WebApp;
@@ -262,17 +245,16 @@
         let productData = {
             id: '',
             name: 'Product',
-            price: 0,
-            image: null
+            price: 0
         };
         let selectedSize = null;
         let quantity = 1;
 
-        // Parse URL Parameters or Telegram Start Parameter
+        // Parse Product Data from startapp parameter
         function parseProductData() {
             const urlParams = new URLSearchParams(window.location.search);
-
-            // Try to get data from startapp parameter (base64 encoded)
+            
+            // Get data from startapp parameter (base64 encoded)
             const startapp = urlParams.get('startapp');
             if (startapp) {
                 try {
@@ -281,18 +263,19 @@
                     productData.id = data.product_id || data.id || '';
                     productData.name = data.name || 'Product';
                     productData.price = parseFloat(data.price) || 0;
-                    productData.image = data.image_url || data.image || null;
+                    
+                    console.log('Parsed product data:', productData);
                     return true;
                 } catch (e) {
                     console.error('Failed to parse startapp data:', e);
+                    // Try fallback to direct params
                 }
             }
 
-            // Fallback to direct URL parameters
+            // Fallback to direct URL parameters (for testing)
             productData.id = urlParams.get('id') || '';
             productData.name = urlParams.get('name') || 'Product';
             productData.price = parseFloat(urlParams.get('price')) || 0;
-            productData.image = urlParams.get('image') || null;
 
             return productData.id && productData.price > 0;
         }
@@ -301,6 +284,9 @@
         function initializeProduct() {
             if (!parseProductData()) {
                 showError('Invalid product data. Please try again.');
+                tg.MainButton.setText('ERROR');
+                tg.MainButton.show();
+                tg.MainButton.disable();
                 return false;
             }
 
@@ -308,6 +294,7 @@
             document.getElementById('productName').textContent = decodeURIComponent(productData.name);
             document.getElementById('productPrice').textContent = `$${productData.price.toFixed(2)}`;
             updateTotal();
+            updateMainButton();
 
             return true;
         }
@@ -317,11 +304,11 @@
             button.addEventListener('click', function() {
                 // Remove previous selection
                 document.querySelectorAll('.size-button').forEach(b => b.classList.remove('selected'));
-
+                
                 // Add selection
                 this.classList.add('selected');
                 selectedSize = this.dataset.size;
-
+                
                 // Update summary
                 document.getElementById('selectedSize').textContent = selectedSize;
                 updateMainButton();
@@ -361,6 +348,7 @@
             document.getElementById('qtyMinus').disabled = quantity <= 1;
             document.getElementById('qtyPlus').disabled = quantity >= 99;
             updateTotal();
+            updateMainButton();
         }
 
         // Update Total Price
@@ -402,10 +390,6 @@
                 return;
             }
 
-            // Show loading state
-            document.getElementById('loading').classList.add('show');
-            tg.MainButton.showProgress();
-
             // Prepare data to send back to bot
             const data = {
                 action: 'add_to_cart',
@@ -420,7 +404,7 @@
             try {
                 // Send data back to bot
                 tg.sendData(JSON.stringify(data));
-
+                
                 // Success feedback
                 if (tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
@@ -428,21 +412,13 @@
             } catch (error) {
                 console.error('Failed to send data:', error);
                 showError('Failed to add to cart. Please try again.');
-                document.getElementById('loading').classList.remove('show');
-                tg.MainButton.hideProgress();
             }
         });
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', function() {
-            if (initializeProduct()) {
-                updateQuantity();
-                updateMainButton();
-            } else {
-                tg.MainButton.setText('ERROR');
-                tg.MainButton.show();
-                tg.MainButton.disable();
-            }
+            initializeProduct();
+            updateQuantity();
         });
 
         // Apply Telegram theme
